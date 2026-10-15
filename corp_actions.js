@@ -1,4 +1,4 @@
-// Corporate action normalization layer (verified through 2026-10-08)
+// Corporate action + listing-status normalization layer (verified through 2026-10-15)
 window.CORP_ACTION_AUDIT = {
   FISV:[
     {type:'티커 변경',date:'2025-11-11',text:'Fiserv가 NYSE의 FI에서 Nasdaq의 FISV로 복귀. 현재 메인 티커는 FISV.'},
@@ -14,8 +14,16 @@ window.CORP_ACTION_AUDIT = {
   ECHO:[{type:'티커 변경',date:'2026-06-24',text:'EchoStar가 SATS에서 ECHO로 티커 변경. 현재 Nasdaq 티커는 ECHO.'}]
 };
 
+window.LISTING_STATUS_AUDIT={
+  GWH:{status:'상장폐지',date:'2026-10-02',current:'GWHT (OTC)',text:'ESS Tech 보통주 GWH는 NYSE 거래가 즉시 정지되고 상장폐지 절차가 개시됨. 2026-10-05부터 OTC의 GWHT로 거래되어 미국 직접상장·ADR 기준에서 제외.'},
+  SES:{status:'상장유지 경고',date:'2026-07-17',text:'NYSE 최소 주가 요건 미준수 통지를 받았으나 보통주 SES 거래는 계속됨.'},
+  QSI:{status:'상장유지 경고',date:'2026-07-23',text:'Nasdaq 최소 주가 요건 미준수 통지를 받았으나 즉시 상장폐지는 아님.'},
+  LOCL:{status:'상장유지 경고',date:'2026-02-05',text:'NYSE 시가총액/자본 요건 미준수 통지를 받았으나 개선기간 동안 상장·거래 유지.'}
+};
+
 (function(){
   const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO'};
+  const excludedFromActive=new Set(['GWH']);
   function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
   function addLegacyText(x,old){
     const tag=`과거 티커/기업: ${old}`;
@@ -57,6 +65,7 @@ window.CORP_ACTION_AUDIT = {
     renameTicker('CTRA','DVN','Devon Energy','데본 에너지');
     mergeInto('PANW','CYBR');
     mergeInto('BKR','GTLS');
+    excludedFromActive.forEach(removeTicker);
 
     ['SNPS','BNY','MRSH','ECHO'].forEach(t=>{const x=D.find(z=>z.t===t);if(x){
       const olds=Object.entries(aliases).filter(([,cur])=>cur===t).map(([o])=>o); olds.forEach(o=>addLegacyText(x,o));
@@ -66,7 +75,7 @@ window.CORP_ACTION_AUDIT = {
       window.TAGMAP.FISV=window.TAGMAP.FISV||window.TAGMAP.FI||['결제','금융인프라'];
       window.TAGMAP.CLF=window.TAGMAP.CLF||window.TAGMAP.CLFS||['핵심광물·소재'];
       window.TAGMAP.DVN=window.TAGMAP.DVN||window.TAGMAP.CTRA||['천연가스·LNG'];
-      delete window.TAGMAP.FI; delete window.TAGMAP.CLFS; delete window.TAGMAP.CTRA; delete window.TAGMAP.CYBR; delete window.TAGMAP.GTLS;
+      delete window.TAGMAP.FI; delete window.TAGMAP.CLFS; delete window.TAGMAP.CTRA; delete window.TAGMAP.CYBR; delete window.TAGMAP.GTLS; delete window.TAGMAP.GWH;
     }
 
     if(typeof render==='function') render();
@@ -79,11 +88,16 @@ window.CORP_ACTION_AUDIT = {
     const prev=window.openD;
     const wrapped=function(t){
       const current=aliases[t]||t; prev(current);
-      const rows=window.CORP_ACTION_AUDIT[current]||[]; if(!rows.length) return;
+      const rows=window.CORP_ACTION_AUDIT[current]||[];
+      const listing=window.LISTING_STATUS_AUDIT[current];
+      if(!rows.length && !listing) return;
       const detail=document.getElementById('detail'); if(!detail) return;
       const old=document.getElementById('corpActionSec'); if(old) old.remove();
       const sec=document.createElement('div'); sec.className='sec'; sec.id='corpActionSec';
-      sec.innerHTML='<h3>기업행동 이력 · Corporate Actions</h3>'+rows.map(r=>`<div class="hist"><b>${esc3(r.type)} · ${esc3(r.date)}</b><div>${esc3(r.text)}</div></div>`).join('');
+      let html='<h3>기업행동·상장상태 이력</h3>';
+      if(listing) html+=`<div class="hist"><b>${esc3(listing.status)} · ${esc3(listing.date)}</b><div>${esc3(listing.text)}</div></div>`;
+      html+=rows.map(r=>`<div class="hist"><b>${esc3(r.type)} · ${esc3(r.date)}</b><div>${esc3(r.text)}</div></div>`).join('');
+      sec.innerHTML=html;
       const source=[...detail.querySelectorAll('.sec')].find(s=>/원본 (등장|연결) 이력/.test((s.querySelector('h3')||{}).textContent||''));
       if(source) source.insertAdjacentElement('beforebegin',sec); else detail.appendChild(sec);
     };
