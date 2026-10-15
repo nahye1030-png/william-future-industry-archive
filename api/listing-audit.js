@@ -2,9 +2,17 @@ const fs=require('fs');
 const path=require('path');
 
 const ALIASES={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P'};
-const EXCLUDED=new Set(['GWH','ABB']);
+const EXCLUDED=new Set(['GWH','ABB','SGMO']);
 const EXTRA=['DTE','FE','CMS'];
-const CHECK=['GILD','ABT','DHR','IBM','P'];
+const CHECK=['GILD','ABT','DHR','IBM','P','AQB','DVN'];
+const STATUS={
+  SGMO:{status:['OTC','BANKRUPTCY'],current:'SGMOQ'},
+  GWH:{status:['OTC'],current:'GWHT'},
+  ABB:{status:['OTC'],current:'ABBNY'},
+  SES:{status:['ACTIVE'],warning:'listing-compliance'},
+  QSI:{status:['ACTIVE'],warning:'listing-compliance'},
+  LOCL:{status:['ACTIVE'],warning:'listing-compliance'}
+};
 
 function canon(s){return String(s||'').trim().toUpperCase().replace(/[-/]/g,'.')}
 function parseDir(text,kind){
@@ -43,8 +51,8 @@ module.exports=async function handler(req,res){
     const archive=[...set].sort();
     const unmatched=archive.filter(t=>!listed.has(canon(t)));
     const matched=archive.filter(t=>listed.has(canon(t)));
-    const check=Object.fromEntries(CHECK.map(t=>[t,{inArchive:set.has(t),currentlyListed:listed.has(t)}]));
+    const check=Object.fromEntries(CHECK.map(t=>[t,{inArchive:set.has(t),currentlyListed:listed.has(t),status:set.has(t)&&listed.has(t)?'ACTIVE':'REVIEW'}]));
     res.setHeader('Cache-Control','no-store');
-    res.status(200).json({asOf:new Date().toISOString(),archiveCount:archive.length,matchedCount:matched.length,unmatchedCount:unmatched.length,unmatched,check,source:{nasdaq:'nasdaqlisted.txt',other:'otherlisted.txt'}});
+    res.status(200).json({asOf:new Date().toISOString(),archiveCount:archive.length,matchedCount:matched.length,unmatchedCount:unmatched.length,unmatched,knownNonActive:STATUS,check,source:{nasdaq:'nasdaqlisted.txt',other:'otherlisted.txt'},statusModel:['ACTIVE','SUSPENDED','DELISTING','OTC','BANKRUPTCY']});
   }catch(e){res.status(500).json({error:String(e&&e.message||e)})}
 }
