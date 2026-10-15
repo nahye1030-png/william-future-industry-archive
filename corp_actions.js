@@ -16,7 +16,8 @@ window.CORP_ACTION_AUDIT = {
   IBM:[{type:'인수',date:'2026-03-17',text:'IBM이 Confluent 인수를 완료. CFLT는 Nasdaq 거래가 종료되어 과거 원본 이력을 IBM에 통합.'}],
   ABT:[{type:'인수',date:'2026-03-23',text:'Abbott가 Exact Sciences 인수를 완료. EXAS는 Nasdaq 상장이 종료되어 과거 원본 이력을 ABT에 통합.'}],
   DHR:[{type:'인수',date:'2026-06-10',text:'Danaher가 Masimo 인수를 완료. MASI는 Nasdaq 거래가 종료되어 과거 원본 이력을 DHR에 통합.'}],
-  P:[{type:'사명·티커 변경',date:'2026-04',text:'Pure Storage가 2026-02 Everpure, Inc.로 사명을 변경하고 2026-04 티커를 PSTG에서 NYSE P로 변경. 동일 기업의 과거 PSTG 이력은 P에 보존.'}]
+  P:[{type:'사명·티커 변경',date:'2026-04',text:'Pure Storage가 2026-02 Everpure, Inc.로 사명을 변경하고 2026-04 티커를 PSTG에서 NYSE P로 변경. 동일 기업의 과거 PSTG 이력은 P에 보존.'}],
+  AVX:[{type:'사명·티커 변경',date:'2025-11-13',text:'AgriFORCE Growing Systems가 AVAX One Technology로 사명을 변경하고 Nasdaq 티커를 AGRI에서 AVX로 변경. 2025년 초 기존 ag-tech 사업을 대부분 종료해 현재 미래농업 기업으로 분류하지 않음.'}]
 };
 
 window.LISTING_STATUS_AUDIT={
@@ -29,7 +30,7 @@ window.LISTING_STATUS_AUDIT={
 };
 
 (function(){
-  const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P'};
+  const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P',AGRI:'AVX'};
   const excludedFromActive=new Set(['GWH','ABB','SGMO']);
   function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
   function addLegacyText(x,old){
@@ -77,9 +78,10 @@ window.LISTING_STATUS_AUDIT={
     mergeInto('ABT','EXAS');
     mergeInto('DHR','MASI');
     renameTicker('PSTG','P','Everpure, Inc.','에버퓨어');
+    renameTicker('AGRI','AVX','AVAX One Technology Ltd.','AVAX 원 테크놀로지');
     excludedFromActive.forEach(removeTicker);
 
-    ['SNPS','BNY','MRSH','ECHO','GILD','IBM','ABT','DHR','P'].forEach(t=>{const x=D.find(z=>z.t===t);if(x){
+    ['SNPS','BNY','MRSH','ECHO','GILD','IBM','ABT','DHR','P','AVX'].forEach(t=>{const x=D.find(z=>z.t===t);if(x){
       const olds=Object.entries(aliases).filter(([,cur])=>cur===t).map(([o])=>o); olds.forEach(o=>addLegacyText(x,o));
     }});
 
@@ -88,7 +90,8 @@ window.LISTING_STATUS_AUDIT={
       window.TAGMAP.CLF=window.TAGMAP.CLF||window.TAGMAP.CLFS||['핵심광물·소재'];
       window.TAGMAP.DVN=window.TAGMAP.DVN||window.TAGMAP.CTRA||['천연가스·LNG'];
       window.TAGMAP.P=window.TAGMAP.PSTG||window.TAGMAP.P||['AI·소프트웨어'];
-      ['FI','CLFS','CTRA','CYBR','GTLS','ACLX','CFLT','EXAS','MASI','PSTG','GWH','ABB','SGMO'].forEach(t=>delete window.TAGMAP[t]);
+      if(window.TAGMAP.AGRI){window.TAGMAP.AVX=['디지털자산·블록체인'];}
+      ['FI','CLFS','CTRA','CYBR','GTLS','ACLX','CFLT','EXAS','MASI','PSTG','AGRI','GWH','ABB','SGMO'].forEach(t=>delete window.TAGMAP[t]);
     }
 
     if(typeof render==='function') render();
@@ -118,3 +121,6 @@ window.LISTING_STATUS_AUDIT={
   }
   setTimeout(normalize,0); setTimeout(installDetail,0);
 })();
+
+// Load source-provenance corrections without changing the main HTML bundle.
+(function(){if(typeof document==='undefined')return;if(document.querySelector('script[data-source-corrections]'))return;const s=document.createElement('script');s.src='/source_corrections.js';s.dataset.sourceCorrections='1';document.head.appendChild(s)})();
