@@ -18,11 +18,11 @@ const STATUS={
 
 function canon(s){return String(s||'').trim().toUpperCase().replace(/[-/]/g,'.')}
 function parseDir(text,kind){const lines=text.split(/\r?\n/).filter(Boolean),out=[];for(const line of lines.slice(1)){if(line.startsWith('File Creation Time'))continue;const c=line.split('|');if(c.length<2)continue;const sym=kind==='nasdaq'?c[0]:(c[0]||c[3]||c[7]);if(sym&&sym!=='Symbol'&&sym!=='ACT Symbol')out.push(canon(sym));}return out}
+function readExtras(){const s=fs.readFileSync(path.join(process.cwd(),'extras.js'),'utf8');const start=s.indexOf('window.EXTRA_COMPANIES=');const arrStart=s.indexOf('[',start);const end=s.indexOf('\n];',arrStart);if(start<0||arrStart<0||end<0)return[];return JSON.parse(s.slice(arrStart,end+2));}
 function rawArchiveTickers(){
   const ctx={window:{__B:''}}; vm.createContext(ctx);
   for(let i=0;i<=12;i++){const f=path.join(process.cwd(),`n${String(i).padStart(2,'0')}.js`);vm.runInContext(fs.readFileSync(f,'utf8'),ctx);}
-  const data=JSON.parse(zlib.gunzipSync(Buffer.from(ctx.window.__B,'base64')).toString('utf8'));
-  const ectx={window:{}}; vm.createContext(ectx); vm.runInContext(fs.readFileSync(path.join(process.cwd(),'extras.js'),'utf8'),ectx); const extras=ectx.window.EXTRA_COMPANIES||[];
+  const data=JSON.parse(zlib.gunzipSync(Buffer.from(ctx.window.__B,'base64')).toString('utf8')); const extras=readExtras();
   return [...data,...extras].map(x=>canon(x.t)).filter(Boolean);
 }
 function archiveTickerSet(){const set=new Set(rawArchiveTickers());for(const [old,cur] of Object.entries(ALIASES)){if(set.has(old)){set.delete(old);set.add(cur)}}EXCLUDED.forEach(x=>set.delete(x));return set}
