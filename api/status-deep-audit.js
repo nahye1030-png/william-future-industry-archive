@@ -33,16 +33,16 @@ module.exports=async function handler(req,res){
         const sub=await fetchJson(`https://data.sec.gov/submissions/CIK${m.cik}.json`); const recent=sub.filings&&sub.filings.recent||{}; const n=(recent.form||[]).length; const signals=[];
         for(let i=0;i<n;i++){
           const r=rowAt(recent,i); if(!r.date||r.date<'2025-01-01')continue;
-          if(r.form==='25-NSE'||r.form==='25')signals.push({...r,signal:'DELISTING'});
-          if(r.form==='8-K'&&String(r.items).includes('1.03'))signals.push({...r,signal:'BANKRUPTCY'});
-          if(r.form==='8-K'&&String(r.items).includes('3.01'))signals.push({...r,signal:'DELISTING_REVIEW'});
+          if(r.form==='25-NSE'||r.form==='25')signals.push({...r,signal:'FORM25_REVIEW'});
+          if(r.form==='8-K'&&String(r.items).includes('1.03'))signals.push({...r,signal:'BANKRUPTCY_REVIEW'});
+          if(r.form==='8-K'&&String(r.items).includes('3.01'))signals.push({...r,signal:'LISTING_REVIEW'});
           if(/^15-12/.test(r.form||''))signals.push({...r,signal:'DEREGISTRATION_REVIEW'});
         }
-        return {ticker:t,title:m.title,status:signals.some(s=>s.signal==='BANKRUPTCY')?'BANKRUPTCY':signals.some(s=>s.signal==='DELISTING')?'DELISTING':signals.length?'REVIEW':'ACTIVE_NO_SEC_RED_FLAG',signals:signals.slice(0,8)};
+        return {ticker:t,title:m.title,status:signals.length?'REVIEW':'ACTIVE_NO_SEC_RED_FLAG',signals:signals.slice(0,8)};
       }catch(e){return {ticker:t,status:'REVIEW',reason:String(e.message||e)}}
     }));
     out.push(...got); if(p+5<batch.length)await sleep(120);
   }
-  res.setHeader('Cache-Control','no-store'); res.status(200).json({asOf:new Date().toISOString(),offset,limit,batchCount:batch.length,total:all.length,results:out});
+  res.setHeader('Cache-Control','no-store'); res.status(200).json({asOf:new Date().toISOString(),offset,limit,batchCount:batch.length,total:all.length,results:out,note:'SEC Form 25/8-K signals are review flags only until the affected security and actual trading status are verified.'});
  }catch(e){res.status(500).json({error:String(e.message||e)})}
 }
