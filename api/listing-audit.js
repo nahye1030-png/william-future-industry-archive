@@ -1,8 +1,8 @@
 const fs=require('fs');
 const path=require('path');
 
-const ALIASES={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO'};
-const EXCLUDED=new Set(['GWH']);
+const ALIASES={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P'};
+const EXCLUDED=new Set(['GWH','ABB']);
 const EXTRA=['DTE','FE','CMS'];
 const CHECK=['GILD','ABT','DHR','IBM','P'];
 
