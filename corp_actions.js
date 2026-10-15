@@ -11,19 +11,25 @@ window.CORP_ACTION_AUDIT = {
   SNPS:[{type:'인수',date:'2025-07-17',text:'Synopsys가 Ansys 인수 완료. ANSS는 Nasdaq 거래 종료, 관련 과거 이력은 SNPS 기준으로 해석.'}],
   BNY:[{type:'티커 변경',date:'2026-05-21',text:'Bank of New York Mellon이 BK에서 BNY로 티커 변경. 현재 NYSE 티커는 BNY.'}],
   MRSH:[{type:'티커 변경',date:'2026-01-14',text:'Marsh McLennan이 MMC에서 MRSH로 티커 변경. 현재 NYSE 티커는 MRSH.'}],
-  ECHO:[{type:'티커 변경',date:'2026-06-24',text:'EchoStar가 SATS에서 ECHO로 티커 변경. 현재 Nasdaq 티커는 ECHO.'}]
+  ECHO:[{type:'티커 변경',date:'2026-06-24',text:'EchoStar가 SATS에서 ECHO로 티커 변경. 현재 Nasdaq 티커는 ECHO.'}],
+  GILD:[{type:'인수',date:'2026-04-28',text:'Gilead Sciences가 Arcellx 인수를 완료. ACLX는 독립 상장이 종료되어 과거 원본 이력을 GILD에 통합.'}],
+  IBM:[{type:'인수',date:'2026-03-17',text:'IBM이 Confluent 인수를 완료. CFLT는 Nasdaq 거래가 종료되어 과거 원본 이력을 IBM에 통합.'}],
+  ABT:[{type:'인수',date:'2026-03-23',text:'Abbott가 Exact Sciences 인수를 완료. EXAS는 Nasdaq 상장이 종료되어 과거 원본 이력을 ABT에 통합.'}],
+  DHR:[{type:'인수',date:'2026-06-10',text:'Danaher가 Masimo 인수를 완료. MASI는 Nasdaq 거래가 종료되어 과거 원본 이력을 DHR에 통합.'}],
+  P:[{type:'사명·티커 변경',date:'2026-04',text:'Pure Storage가 2026-02 Everpure, Inc.로 사명을 변경하고 2026-04 티커를 PSTG에서 NYSE P로 변경. 동일 기업의 과거 PSTG 이력은 P에 보존.'}]
 };
 
 window.LISTING_STATUS_AUDIT={
   GWH:{status:'상장폐지',date:'2026-10-02',current:'GWHT (OTC)',text:'ESS Tech 보통주 GWH는 NYSE 거래가 즉시 정지되고 상장폐지 절차가 개시됨. 2026-10-05부터 OTC의 GWHT로 거래되어 미국 직접상장·ADR 기준에서 제외.'},
+  ABB:{status:'거래소 상장폐지·OTC 전환',date:'2023-05-23',current:'ABBNY (OTC)',text:'ABB는 NYSE ADR 상장을 폐지하고 Level I ADR을 OTC ABBNY로 전환. 미국 거래소 직접상장·ADR 기준에서 제외.'},
   SES:{status:'상장유지 경고',date:'2026-07-17',text:'NYSE 최소 주가 요건 미준수 통지를 받았으나 보통주 SES 거래는 계속됨.'},
   QSI:{status:'상장유지 경고',date:'2026-07-23',text:'Nasdaq 최소 주가 요건 미준수 통지를 받았으나 즉시 상장폐지는 아님.'},
   LOCL:{status:'상장유지 경고',date:'2026-02-05',text:'NYSE 시가총액/자본 요건 미준수 통지를 받았으나 개선기간 동안 상장·거래 유지.'}
 };
 
 (function(){
-  const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO'};
-  const excludedFromActive=new Set(['GWH']);
+  const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P'};
+  const excludedFromActive=new Set(['GWH','ABB']);
   function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
   function addLegacyText(x,old){
     const tag=`과거 티커/기업: ${old}`;
@@ -54,7 +60,7 @@ window.LISTING_STATUS_AUDIT={
   function renameTicker(oldTicker,current,name,ko){
     const x=D.find(z=>z.t===oldTicker); if(!x) return;
     x.t=current; if(name)x.n=name; if(ko)x.k=ko; addLegacyText(x,oldTicker);
-    if(window.TAGMAP){ window.TAGMAP[current]=window.TAGMAP[oldTicker]||window.TAGMAP[current]||['천연가스·LNG']; }
+    if(window.TAGMAP){ window.TAGMAP[current]=window.TAGMAP[oldTicker]||window.TAGMAP[current]||['산업장비·계측']; }
   }
   function normalize(){
     if(typeof D==='undefined'||!Array.isArray(D)||!D.length){setTimeout(normalize,25);return;}
@@ -65,9 +71,14 @@ window.LISTING_STATUS_AUDIT={
     renameTicker('CTRA','DVN','Devon Energy','데본 에너지');
     mergeInto('PANW','CYBR');
     mergeInto('BKR','GTLS');
+    mergeInto('GILD','ACLX');
+    mergeInto('IBM','CFLT');
+    mergeInto('ABT','EXAS');
+    mergeInto('DHR','MASI');
+    renameTicker('PSTG','P','Everpure, Inc.','에버퓨어');
     excludedFromActive.forEach(removeTicker);
 
-    ['SNPS','BNY','MRSH','ECHO'].forEach(t=>{const x=D.find(z=>z.t===t);if(x){
+    ['SNPS','BNY','MRSH','ECHO','GILD','IBM','ABT','DHR','P'].forEach(t=>{const x=D.find(z=>z.t===t);if(x){
       const olds=Object.entries(aliases).filter(([,cur])=>cur===t).map(([o])=>o); olds.forEach(o=>addLegacyText(x,o));
     }});
 
@@ -75,7 +86,8 @@ window.LISTING_STATUS_AUDIT={
       window.TAGMAP.FISV=window.TAGMAP.FISV||window.TAGMAP.FI||['결제','금융인프라'];
       window.TAGMAP.CLF=window.TAGMAP.CLF||window.TAGMAP.CLFS||['핵심광물·소재'];
       window.TAGMAP.DVN=window.TAGMAP.DVN||window.TAGMAP.CTRA||['천연가스·LNG'];
-      delete window.TAGMAP.FI; delete window.TAGMAP.CLFS; delete window.TAGMAP.CTRA; delete window.TAGMAP.CYBR; delete window.TAGMAP.GTLS; delete window.TAGMAP.GWH;
+      window.TAGMAP.P=window.TAGMAP.PSTG||window.TAGMAP.P||['AI·소프트웨어'];
+      ['FI','CLFS','CTRA','CYBR','GTLS','ACLX','CFLT','EXAS','MASI','PSTG','GWH','ABB'].forEach(t=>delete window.TAGMAP[t]);
     }
 
     if(typeof render==='function') render();
