@@ -20,16 +20,17 @@ window.CORP_ACTION_AUDIT = {
 };
 
 window.LISTING_STATUS_AUDIT={
-  GWH:{status:'상장폐지',date:'2026-10-02',current:'GWHT (OTC)',text:'ESS Tech 보통주 GWH는 NYSE 거래가 즉시 정지되고 상장폐지 절차가 개시됨. 2026-10-05부터 OTC의 GWHT로 거래되어 미국 직접상장·ADR 기준에서 제외.'},
-  ABB:{status:'거래소 상장폐지·OTC 전환',date:'2023-05-23',current:'ABBNY (OTC)',text:'ABB는 NYSE ADR 상장을 폐지하고 Level I ADR을 OTC ABBNY로 전환. 미국 거래소 직접상장·ADR 기준에서 제외.'},
-  SES:{status:'상장유지 경고',date:'2026-07-17',text:'NYSE 최소 주가 요건 미준수 통지를 받았으나 보통주 SES 거래는 계속됨.'},
-  QSI:{status:'상장유지 경고',date:'2026-07-23',text:'Nasdaq 최소 주가 요건 미준수 통지를 받았으나 즉시 상장폐지는 아님.'},
-  LOCL:{status:'상장유지 경고',date:'2026-02-05',text:'NYSE 시가총액/자본 요건 미준수 통지를 받았으나 개선기간 동안 상장·거래 유지.'}
+  GWH:{status:'OTC',date:'2026-10-02',current:'GWHT (OTC)',text:'ESS Tech 보통주 GWH는 NYSE 거래가 즉시 정지되고 상장폐지 절차가 개시됨. 2026-10-05부터 OTC의 GWHT로 거래되어 미국 직접상장·ADR 기준에서 제외.'},
+  ABB:{status:'OTC',date:'2023-05-23',current:'ABBNY (OTC)',text:'ABB는 NYSE ADR 상장을 폐지하고 Level I ADR을 OTC ABBNY로 전환. 미국 거래소 직접상장·ADR 기준에서 제외.'},
+  SGMO:{status:'OTC + BANKRUPTCY',date:'2026-06-23',current:'SGMOQ (OTCID Basic Market)',text:'Sangamo Therapeutics는 2026-05-05 Nasdaq 거래가 중단되어 OTCQB로 이동했고 이후 Chapter 11을 신청. 현재 SGMOQ로 OTCID Basic Market에서 거래되어 활성 미국 거래소 상장 목록에서 제외.'},
+  SES:{status:'ACTIVE · 상장유지 경고',date:'2026-07-17',text:'NYSE 최소 주가 요건 미준수 통지를 받았으나 보통주 SES 거래는 계속됨.'},
+  QSI:{status:'ACTIVE · 상장유지 경고',date:'2026-07-23',text:'Nasdaq 최소 주가 요건 미준수 통지를 받았으나 즉시 상장폐지는 아님.'},
+  LOCL:{status:'ACTIVE · 상장유지 경고',date:'2026-02-05',text:'NYSE 시가총액/자본 요건 미준수 통지를 받았으나 개선기간 동안 상장·거래 유지.'}
 };
 
 (function(){
   const aliases={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P'};
-  const excludedFromActive=new Set(['GWH','ABB']);
+  const excludedFromActive=new Set(['GWH','ABB','SGMO']);
   function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
   function addLegacyText(x,old){
     const tag=`과거 티커/기업: ${old}`;
@@ -87,7 +88,7 @@ window.LISTING_STATUS_AUDIT={
       window.TAGMAP.CLF=window.TAGMAP.CLF||window.TAGMAP.CLFS||['핵심광물·소재'];
       window.TAGMAP.DVN=window.TAGMAP.DVN||window.TAGMAP.CTRA||['천연가스·LNG'];
       window.TAGMAP.P=window.TAGMAP.PSTG||window.TAGMAP.P||['AI·소프트웨어'];
-      ['FI','CLFS','CTRA','CYBR','GTLS','ACLX','CFLT','EXAS','MASI','PSTG','GWH','ABB'].forEach(t=>delete window.TAGMAP[t]);
+      ['FI','CLFS','CTRA','CYBR','GTLS','ACLX','CFLT','EXAS','MASI','PSTG','GWH','ABB','SGMO'].forEach(t=>delete window.TAGMAP[t]);
     }
 
     if(typeof render==='function') render();
