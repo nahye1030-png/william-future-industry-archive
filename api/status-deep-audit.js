@@ -8,10 +8,10 @@ const EXCLUDED=new Set(['GWH','ABB','SGMO']);
 const UA='WilliamFutureIndustryArchive/1.0 contact: archive-audit@example.com';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function canon(s){return String(s||'').trim().toUpperCase().replace(/[-/]/g,'.')}
+function readExtras(){const s=fs.readFileSync(path.join(process.cwd(),'extras.js'),'utf8');const start=s.indexOf('window.EXTRA_COMPANIES=');const arrStart=s.indexOf('[',start);const end=s.indexOf('\n];',arrStart);if(start<0||arrStart<0||end<0)return[];return JSON.parse(s.slice(arrStart,end+2));}
 function archiveTickers(){
  const ctx={window:{__B:''}}; vm.createContext(ctx); for(let i=0;i<=12;i++){vm.runInContext(fs.readFileSync(path.join(process.cwd(),`n${String(i).padStart(2,'0')}.js`),'utf8'),ctx)}
- const data=JSON.parse(zlib.gunzipSync(Buffer.from(ctx.window.__B,'base64')).toString('utf8')); const ectx={window:{}}; vm.createContext(ectx); vm.runInContext(fs.readFileSync(path.join(process.cwd(),'extras.js'),'utf8'),ectx); const extras=ectx.window.EXTRA_COMPANIES||[];
- const set=new Set([...data,...extras].map(x=>canon(x.t)).filter(Boolean)); for(const [old,cur] of Object.entries(ALIASES)){if(set.has(old)){set.delete(old);set.add(cur)}} EXCLUDED.forEach(x=>set.delete(x)); return [...set].sort();
+ const data=JSON.parse(zlib.gunzipSync(Buffer.from(ctx.window.__B,'base64')).toString('utf8')); const extras=readExtras(); const set=new Set([...data,...extras].map(x=>canon(x.t)).filter(Boolean)); for(const [old,cur] of Object.entries(ALIASES)){if(set.has(old)){set.delete(old);set.add(cur)}} EXCLUDED.forEach(x=>set.delete(x)); return [...set].sort();
 }
 function rowAt(recent,i){const g=k=>Array.isArray(recent[k])?recent[k][i]:undefined;return {form:g('form'),date:g('filingDate'),items:g('items')||'',accession:g('accessionNumber'),primary:g('primaryDocument')}}
 async function fetchJson(url){const r=await fetch(url,{headers:{'user-agent':UA,'accept-encoding':'gzip, deflate'}});if(!r.ok)throw new Error(`${r.status} ${url}`);return r.json()}
