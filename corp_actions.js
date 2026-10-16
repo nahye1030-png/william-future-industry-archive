@@ -124,3 +124,5 @@ window.LISTING_STATUS_AUDIT={
 
 // Load source-provenance corrections without changing the main HTML bundle.
 (function(){if(typeof document==='undefined')return;if(document.querySelector('script[data-source-corrections]'))return;const s=document.createElement('script');s.src='/source_corrections.js';s.dataset.sourceCorrections='1';document.head.appendChild(s)})();
+// Load Southern Company source audit after the main source corrections.
+(function(){if(typeof document==='undefined')return;if(document.querySelector('script[data-source-so]'))return;const s=document.createElement('script');s.src='/source_so.js';s.dataset.sourceSo='1';document.head.appendChild(s)})();
