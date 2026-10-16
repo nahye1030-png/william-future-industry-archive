@@ -5,7 +5,7 @@ const vm=require('vm');
 
 const ALIASES={FI:'FISV',CLFS:'CLF',CTRA:'DVN',CYBR:'PANW',GTLS:'BKR',ANSS:'SNPS',BK:'BNY',MMC:'MRSH',SATS:'ECHO',ACLX:'GILD',CFLT:'IBM',EXAS:'ABT',MASI:'DHR',PSTG:'P',AGRI:'AVX'};
 const EXCLUDED=new Set(['GWH','ABB','SGMO']);
-const RUNTIME_ADDED=['EXC','SRE','WEC','PPL','XEL','ES','DUK','PEG','LAND','ROP','CHRW'];
+const RUNTIME_ADDED=['EXC','SRE','WEC','PPL','XEL','ES','DUK','PEG','LAND','ROP','CHRW','SO'];
 const CHECK=['GILD','ABT','DHR','IBM','P','AQB','DVN',...RUNTIME_ADDED];
 const STATUS={
   SGMO:{status:['OTC','BANKRUPTCY'],current:'SGMOQ'},
@@ -35,6 +35,6 @@ module.exports=async function handler(req,res){
     ]);
     if(!n.ok||!o.ok) throw new Error(`symbol directory fetch failed: ${n.status}/${o.status}`);
     const [nt,ot]=await Promise.all([n.text(),o.text()]); const listed=new Set([...parseDir(nt,'nasdaq'),...parseDir(ot,'other')]); const set=archiveTickerSet(); const archive=[...set].sort(); const unmatched=archive.filter(t=>!listed.has(canon(t))); const matched=archive.filter(t=>listed.has(canon(t))); const check=Object.fromEntries(CHECK.map(t=>[t,{inArchive:set.has(t),currentlyListed:listed.has(t),status:set.has(t)&&listed.has(t)?'ACTIVE':'REVIEW'}]));
-    res.setHeader('Cache-Control','no-store'); res.status(200).json({asOf:new Date().toISOString(),archiveCount:archive.length,matchedCount:matched.length,unmatchedCount:unmatched.length,unmatched,knownNonActive:STATUS,check,source:{archive:'n00-n12 + extras.js + source_corrections.js additions',nasdaq:'nasdaqlisted.txt',other:'otherlisted.txt'},statusModel:['ACTIVE','SUSPENDED','DELISTING','OTC','BANKRUPTCY']});
+    res.setHeader('Cache-Control','no-store'); res.status(200).json({asOf:new Date().toISOString(),archiveCount:archive.length,matchedCount:matched.length,unmatchedCount:unmatched.length,unmatched,knownNonActive:STATUS,check,source:{archive:'n00-n12 + extras.js + source_corrections.js/source_so.js runtime additions',nasdaq:'nasdaqlisted.txt',other:'otherlisted.txt'},statusModel:['ACTIVE','SUSPENDED','DELISTING','OTC','BANKRUPTCY']});
   }catch(e){res.status(500).json({error:String(e&&e.message||e)})}
 }
